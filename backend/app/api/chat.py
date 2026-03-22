@@ -18,7 +18,7 @@ async def chat(request: ChatRequest):
         # Devuelve como SSE stream
         async def stream():
             yield f"data: {result.model_dump_json()}\n\n"
-        
+        headers = {"X-Content-Type-Options": "nosniff"}
         return StreamingResponse(stream(), media_type="text/event-stream")
         
     except Exception as e:
