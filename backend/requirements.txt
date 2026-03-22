@@ -1,5 +1,11 @@
 fastapi==0.135.1
-uvicorn==<versión_instalada>
+uvicorn[standard]==0.34.0
 pydantic==2.12.5
+pydantic-settings==2.13.1
 starlette==0.52.1
 anyio==4.12.1
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+openai==1.68.2
+anthropic==0.42.0
+python-dotenv==1.0.1
