@@ -1,0 +1,91 @@
+{
+  "$schema": "https://github.com/Azure/data-api-builder/releases/download/v1.1.7/dab.draft.schema.json",
+  "data-source": {
+    "database-type": "postgresql",
+    "connection-string": "@env('POSTGRES_CONNECTION_STRING')"
+  },
+
+  "runtime": {
+    "rest": { "enabled": true, "path": "/api" },
+    "graphql": { "enabled": false },
+    "mcp": { "enabled": true },
+    "host": {
+      "mode": "development",
+      "cors": {
+        "origins": ["*"],
+        "allow-credentials": false
+      },
+      "authentication": {
+        "provider": "Simulator"
+      }
+    }
+  },
+
+  "entities": {
+
+    "Orders": {
+      "source": { "object": "public.orders", "type": "table" },
+      "permissions": [
+        { "role": "anonymous", "actions": [] },
+        { "role": "viewer",    "actions": ["read"] },
+        { "role": "analyst",   "actions": ["read"] },
+        { "role": "admin",     "actions": ["read", "create", "update", "delete"] }
+      ]
+    },
+
+    "Products": {
+      "source": { "object": "public.products", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": ["read"] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read", "create", "update", "delete"] }
+      ]
+    },
+
+    "Customers": {
+      "source": { "object": "public.customers", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": [] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read"] }
+      ]
+    },
+
+    "OrderItems": {
+      "source": { "object": "public.order_items", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": [] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read"] }
+      ]
+    },
+
+    "OrderPayments": {
+      "source": { "object": "public.order_payments", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": [] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read"] }
+      ]
+    },
+
+    "OrderReviews": {
+      "source": { "object": "public.order_reviews", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": [] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read"] }
+      ]
+    },
+
+    "Sellers": {
+      "source": { "object": "public.sellers", "type": "table" },
+      "permissions": [
+        { "role": "viewer",  "actions": [] },
+        { "role": "analyst", "actions": ["read"] },
+        { "role": "admin",   "actions": ["read"] }
+      ]
+    }
+
+  }
+}

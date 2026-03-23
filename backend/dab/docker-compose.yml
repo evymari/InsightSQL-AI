@@ -1,0 +1,10 @@
+services:
+  dab:
+    image: mcr.microsoft.com/azure-databases/data-api-builder:latest
+    ports:
+      - "5000:5000"
+    env_file:
+      - ../.env
+    volumes:
+      - ./dab-config.json:/App/dab-config.json:ro
+    command: ["start", "--config", "/App/dab-config.json"]
