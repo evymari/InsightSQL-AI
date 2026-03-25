@@ -1,0 +1,191 @@
+{
+  "project": "InsightSQL",
+  "description": "Agente SQL conversacional con dataset Olist Brazilian E-Commerce",
+  "version": "1.0.0",
+  "database": {
+    "type": "PostgreSQL",
+    "connection": "postgresql://postgres:***@localhost:5432/insightsql",
+    "tables": {
+      "customers": {
+        "description": "Clientes del marketplace - cada fila es un customer único por pedido",
+        "columns": {
+          "customer_id": "VARCHAR(50) - ID único del cliente por pedido (PK)",
+          "customer_unique_id": "VARCHAR(50) - ID persistente del comprador real entre múltiples pedidos",
+          "customer_zip_code_prefix": "VARCHAR(8) - Prefijo del código postal",
+          "customer_city": "VARCHAR(100) - Ciudad del cliente",
+          "customer_state": "CHAR(2) - Estado (UF) del cliente"
+        },
+        "indexes": ["idx_customers_unique_id"],
+        "relationships": []
+      },
+      "sellers": {
+        "description": "Vendedores registrados en la plataforma",
+        "columns": {
+          "seller_id": "VARCHAR(50) - Identificador único del vendedor (PK)",
+          "seller_zip_code_prefix": "VARCHAR(8) - Prefijo del código postal",
+          "seller_city": "VARCHAR(100) - Ciudad del vendedor",
+          "seller_state": "CHAR(2) - Estado del vendedor"
+        },
+        "relationships": []
+      },
+      "products": {
+        "description": "Catálogo de productos publicados en la plataforma",
+        "columns": {
+          "product_id": "VARCHAR(50) - ID único del producto (PK)",
+          "product_category_name": "VARCHAR(100) - Categoría del producto (en portugués, puede ser NULL)",
+          "product_name_lenght": "INTEGER - Longitud del nombre (typo original)",
+          "product_description_lenght": "INTEGER - Longitud de la descripción",
+          "product_photos_qty": "INTEGER - Cantidad de fotos",
+          "product_weight_g": "NUMERIC(10,2) - Peso en gramos",
+          "product_length_cm": "NUMERIC(8,2) - Largo en cm",
+          "product_height_cm": "NUMERIC(8,2) - Alto en cm",
+          "product_width_cm": "NUMERIC(8,2) - Ancho en cm"
+        },
+        "indexes": ["idx_products_category"],
+        "relationships": []
+      },
+      "orders": {
+        "description": "Pedidos realizados por los clientes - tabla central del schema",
+        "columns": {
+          "order_id": "VARCHAR(50) - ID único del pedido (PK)",
+          "customer_id": "VARCHAR(50) - FK a customers.customer_id",
+          "order_status": "VARCHAR(20) - Estado: created, invoiced, approved, processing, shipped, delivered, unavailable, canceled",
+          "order_purchase_timestamp": "TIMESTAMP - Fecha y hora de la compra",
+          "order_approved_at": "TIMESTAMP - Fecha de aprobación del pago",
+          "order_delivered_carrier_date": "TIMESTAMP - Fecha de entrega al transportista",
+          "order_delivered_customer_date": "TIMESTAMP - Fecha de entrega al cliente",
+          "order_estimated_delivery_date": "TIMESTAMP - Fecha de entrega estimada"
+        },
+        "indexes": ["idx_orders_customer_id", "idx_orders_purchase_date", "idx_orders_status"],
+        "relationships": [
+          "FK -> customers(customer_id)"
+        ]
+      },
+      "order_items": {
+        "description": "Líneas de ítem dentro de cada pedido (puede haber múltiples ítems por orden)",
+        "columns": {
+          "order_id": "VARCHAR(50) - FK a orders.order_id (PK parte 1)",
+          "order_item_id": "INTEGER - Número de ítem dentro del pedido 1,2,3... (PK parte 2)",
+          "product_id": "VARCHAR(50) - FK a products.product_id",
+          "seller_id": "VARCHAR(50) - FK a sellers.seller_id",
+          "shipping_limit_date": "TIMESTAMP - Fecha límite de envío",
+          "price": "NUMERIC(10,2) - Precio del producto en el momento de la compra (BRL)",
+          "freight_value": "NUMERIC(10,2) - Valor del flete para ese ítem (BRL)"
+        },
+        "indexes": ["idx_items_order_id", "idx_items_product_id", "idx_items_seller_id"],
+        "relationships": [
+          "FK -> orders(order_id)",
+          "FK -> products(product_id)",
+          "FK -> sellers(seller_id)"
+        ]
+      },
+      "order_payments": {
+        "description": "Pagos asociados a cada pedido - un pedido puede pagarse en cuotas o con múltiples métodos",
+        "columns": {
+          "order_id": "VARCHAR(50) - FK a orders.order_id (PK parte 1)",
+          "payment_sequential": "INTEGER - Secuencia cuando hay múltiples formas de pago (PK parte 2)",
+          "payment_type": "VARCHAR(30) - Método: credit_card, boleto, voucher, debit_card, not_defined",
+          "payment_installments": "INTEGER - Número de cuotas (default 1)",
+          "payment_value": "NUMERIC(10,2) - Valor del pago"
+        },
+        "relationships": [
+          "FK -> orders(order_id)"
+        ]
+      },
+      "order_reviews": {
+        "description": "Reseñas de clientes sobre sus pedidos",
+        "columns": {
+          "review_id": "VARCHAR(50) - ID único de la reseña (PK)",
+          "order_id": "VARCHAR(50) - FK a orders.order_id",
+          "review_score": "SMALLINT - Calificación del 1 al 5 (CHECK 1-5)",
+          "review_comment_title": "VARCHAR(255) - Título opcional del comentario",
+          "review_comment_message": "TEXT - Mensaje del comentario",
+          "review_creation_date": "TIMESTAMP - Fecha de creación de la encuesta",
+          "review_answer_timestamp": "TIMESTAMP - Fecha de respuesta de Olist"
+        },
+        "indexes": ["idx_reviews_order_id", "idx_reviews_score"],
+        "relationships": [
+          "FK -> orders(order_id)"
+        ]
+      },
+      "conversations": {
+        "description": "Sesiones de conversación del chat - sistema de memoria",
+        "columns": {
+          "id": "UUID - ID único de la conversación (PK, auto-generado)",
+          "user_id": "VARCHAR(100) - ID del usuario desde JWT",
+          "created_at": "TIMESTAMP - Fecha de creación",
+          "updated_at": "TIMESTAMP - Fecha de última actualización"
+        },
+        "indexes": ["idx_conversations_user_id"],
+        "relationships": ["1:N -> messages"]
+      },
+      "messages": {
+        "description": "Mensajes individuales dentro de una conversación - incluye metadata del agente",
+        "columns": {
+          "id": "UUID - ID único del mensaje (PK, auto-generado)",
+          "conversation_id": "UUID - FK a conversations.id",
+          "role": "VARCHAR(20) - user o assistant",
+          "content": "TEXT - Contenido del mensaje",
+          "sql_generated": "TEXT - SQL generado por el agente (NULL en mensajes de usuario, solo en assistant)",
+          "intencion_json": "JSONB -JSON con intención descompuesta (metrica, dimension, filtro, granularidad) (NULL en mensajes de usuario)",
+          "created_at": "TIMESTAMP - Fecha de creación"
+        },
+        "indexes": ["idx_messages_conversation_id", "idx_messages_created_at"],
+        "relationships": [
+          "FK -> conversations(id)"
+        ]
+      }
+    },
+    "relationships_summary": {
+      "orders": "tabla central, conecta con customers",
+      "order_items": "conecta orders con products y sellers (muchos a muchos)",
+      "order_payments": "detalles de pago por order",
+      "order_reviews": "reseñas por order",
+      "conversations": "sesiones de chat por usuario",
+      "messages": "historial de chat vinculado a conversaciones"
+    }
+  },
+  "api_contract": {
+    "endpoint": "POST /api/chat",
+    "response_format": {
+      "session_id": "UUID - ID de sesión",
+      "intencion": {
+        "metrica": "string - ejemplo: ventas_totales",
+        "dimension": "string - ejemplo: categoria_producto",
+        "filtro": "string - ejemplo: año_2017",
+        "granularidad": "string - ejemplo: mensual"
+      },
+      "transparencia": {
+        "tablas_utilizadas": ["string"],
+        "razonamiento": "string - explicación de por qué eligió esas tablas"
+      },
+      "sql": "string - query SQL generado",
+      "requiere_aprobacion": "boolean - true si el query necesita aprobación (rol viewer)",
+      "advertencias": ["string"],
+      "resultado": [{"key": "value"}],
+      "insight": {
+        "resumen": "string - resumen ejecutivo",
+        "dato_clave": "string - hallazgo principal",
+        "siguiente_pregunta": "string - sugerencia de siguiente pregunta"
+      }
+    },
+    "mock_endpoint": "POST /api/mock/chat"
+  },
+  "dataset_stats": {
+    "orders": 99441,
+    "customers": 99441,
+    "products": 32951,
+    "sellers": 3095,
+    "order_items": 112650,
+    "order_payments": 103886,
+    "order_reviews": 99224,
+    "date_range": "2016-2018"
+  },
+  "key_concepts": {
+    "intencion_descompuesta": "El agente descompone la pregunta en: metrica (qué medir), dimensión (por qué agrupar), filtro (qué), granularidad (nivel de detalle)",
+    "transparencia": "El sistema explica qué tablas usó y por qué, antes de mostrar el SQL",
+    "memoria_chat": "Cada conversación se guarda en conversations y sus mensajes en messages, incluyendo el SQL generado para auditoría",
+    "aprobacion": "Usuarios con rol viewer requieren aprobación antes de ejecutar queries",
+    "seguridad": "4 capas: RBAC, whitelist SQL, PII masking, detección de prompt injection"
+  }
+}
