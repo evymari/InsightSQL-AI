@@ -13,12 +13,11 @@ async def chat(request: ChatRequest):
     Recibe pregunta en español, descompone intención, genera SQL y devuelve insights.
     """
     try:
-        result = await run_pipeline(request.message, request.session_id)
+        result = await run_pipeline(request.message, request.session_id, request.role)
         
         # Devuelve como SSE stream
         async def stream():
             yield f"data: {result.model_dump_json()}\n\n"
-        headers = {"X-Content-Type-Options": "nosniff"}
         return StreamingResponse(stream(), media_type="text/event-stream")
         
     except Exception as e:

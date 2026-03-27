@@ -5,6 +5,7 @@ from typing import List, Optional
 class ChatRequest(BaseModel):
     message: str
     session_id: str
+    role: str = "analyst"
 
 
 class Intencion(BaseModel):

@@ -1,10 +1,14 @@
 import os
 from dotenv import load_dotenv
-load_dotenv()
+from pathlib import Path
 
 import asyncio
 from mcp import ClientSession
 from mcp.client.sse import sse_client
+
+env_path = Path(__file__).parent.parent / ".env"
+print("env_path client.py", env_path)
+load_dotenv(env_path)
 
 async def get_schema_for_role(user_role: str) -> str:
     url = os.getenv("MCP_SSE_URL")

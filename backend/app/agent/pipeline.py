@@ -4,16 +4,27 @@ from .prompt import SYSTEM_PROMPT
 from .llm import llm
 from .schemas import AgentResponse
 from ..core.database import db
+from ..services.runtime import get_query_service, get_schema_service
 
 
-async def run_pipeline(message: str, session_id: str) -> AgentResponse:
+async def run_pipeline(message: str, session_id: str, role: str = "analyst") -> AgentResponse:
     """
     Pipeline principal: LLM → Parse JSON → Ejecutar SQL → Retornar respuesta tipada
     """
     
+    schema_service = get_schema_service()
+    query_service = get_query_service()
+
+    if schema_service:
+        schema_text = await schema_service.get_schema_for_role(role)
+    else:
+        schema_text = "## PASO 2 - Schema disponible\n- public.orders\n- public.order_items\n- public.products"
+
+    prompt = SYSTEM_PROMPT.replace("{schema}", schema_text)
+
     # 1. Llamar al LLM
     try:
-        response_text = await llm.generate_response(message, SYSTEM_PROMPT)
+        response_text = await llm.generate_response(message, prompt)
     except Exception as e:
         raise Exception(f"Error calling LLM: {str(e)}")
     
@@ -22,7 +33,7 @@ async def run_pipeline(message: str, session_id: str) -> AgentResponse:
         data = json.loads(response_text.strip())
     except json.JSONDecodeError as e:
         # Reintento con el error como contexto
-        retry_prompt = f"{SYSTEM_PROMPT}\n\nTu respuesta anterior no fue JSON válido: {response_text}\n\nError: {str(e)}\n\nResponde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional."
+        retry_prompt = f"{prompt}\n\nTu respuesta anterior no fue JSON válido: {response_text}\n\nError: {str(e)}\n\nResponde ÚNICAMENTE con JSON válido, sin markdown ni texto adicional."
         try:
             retry_response = await llm.generate_response(
                 f"Por favor corrige tu respuesta. Usuario preguntó: {message}", 
@@ -32,11 +43,17 @@ async def run_pipeline(message: str, session_id: str) -> AgentResponse:
         except json.JSONDecodeError:
             raise Exception(f"Failed to parse JSON after retry: {retry_response}")
     
-    # 3. Ejecutar el SQL contra PostgreSQL
+    # 3. Ejecutar el SQL via MCP-first con fallback a PostgreSQL
     try:
         query = data.get("sql", {}).get("query", "")
         if query:
-            rows = await db.execute_query(query)
+            if query_service:
+                query_result = await query_service.execute_query(query)
+                rows = query_result if isinstance(query_result, list) else []
+                if isinstance(query_result, dict) and "error" in query_result:
+                    raise Exception(query_result["error"])
+            else:
+                rows = await db.execute_query(query)
         else:
             rows = []
     except Exception as e:
