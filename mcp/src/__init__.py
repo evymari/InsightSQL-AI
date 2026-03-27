@@ -1,0 +1,1 @@
+"""handytec - MCP Lakehouses package."""

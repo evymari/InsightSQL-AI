@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # MCP / Data source configuration
     mcp_server_url: str = "http://localhost:5000"
-    mcp_transport: str = "sse"
+    mcp_transport: str = "streamable-http"
     mcp_timeout: int = 30
     mcp_retry_attempts: int = 3
     use_mcp_schema: bool = False

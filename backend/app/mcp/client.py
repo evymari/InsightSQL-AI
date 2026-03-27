@@ -16,7 +16,13 @@ class MCPClient:
         self.timeout = timeout
         self.retry_attempts = retry_attempts
         self.mcp_endpoint = f"{self.base_url}/mcp"
-        self._client = httpx.AsyncClient(timeout=httpx.Timeout(timeout), headers={"Content-Type": "application/json"})
+        self._client = httpx.AsyncClient(
+            timeout=httpx.Timeout(timeout),
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json, text/event-stream",
+            },
+        )
 
         logger.info("MCP Client initialized with URL: %s", self.mcp_endpoint)
 
@@ -63,6 +69,12 @@ class MCPClient:
                 await asyncio.sleep(1)
             except httpx.HTTPError as exc:
                 if attempt == self.retry_attempts - 1:
+                    if isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code == 405:
+                        raise MCPConnectionError(
+                            "Failed to call tool "
+                            f"{tool_name}: HTTP 405 on {self.mcp_endpoint}. "
+                            "Likely MCP transport mismatch (SSE vs streamable-http)."
+                        ) from exc
                     raise MCPConnectionError(f"Failed to call tool {tool_name}: {exc}") from exc
                 await asyncio.sleep(1)
             except (MCPToolError, MCPConnectionError, MCPTimeoutError):
