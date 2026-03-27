@@ -1,3 +1,4 @@
+// src/components/QueryForm.js
 export default function QueryForm({ query, setQuery, handleSubmit }) {
   return (
     <form onSubmit={handleSubmit} className="mb-6">
@@ -8,16 +9,15 @@ export default function QueryForm({ query, setQuery, handleSubmit }) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
+
       <div className="mt-3 flex justify-center">
         <button
-          onClick={handleSubmit}
+          type="submit"  // 🔹 importante: usamos type="submit" para el form
           className="bg-blue-600 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-700"
         >
           Generate SQL & Insight
         </button>
       </div>
-       
     </form>
-    
   );
 }

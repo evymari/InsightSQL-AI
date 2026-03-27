@@ -6,7 +6,7 @@ export default function MainLayout() {
     <div className="flex h-screen bg-gray-100">
 
       {/* Sidebar fijo */}
-      <Sidebar />
+      
 
       {/* Contenido dinámico */}
       <main className="flex-1 p-6 overflow-auto">
