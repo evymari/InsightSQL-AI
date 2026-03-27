@@ -130,6 +130,18 @@ InsightSQL-AI/
 │  └─ utils/
 └─ README.md
 ```
+## 📊 Dashboard
+
+![Dashboard](frontend\docs\images\dashboard.png)
+
+## 💡 AI Suggestions
+
+![Suggestions](frontend\docs\images\suggestions.png)
+
+## 📈 Results
+
+![Results](frontend\docs\images\results.png)
+
 ## 👥 Development Team
 
 
