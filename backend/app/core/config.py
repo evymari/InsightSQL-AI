@@ -1,9 +1,13 @@
 import os
 from typing import Optional
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra='ignore'
+    )
     # Database
     database_url: str = "postgresql://postgres:password@localhost:5432/insightsql"
     
@@ -24,10 +28,5 @@ class Settings(BaseSettings):
     debug: bool = True
     host: str = "0.0.0.0"
     port: int = 8000
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
-
 
 settings = Settings()
