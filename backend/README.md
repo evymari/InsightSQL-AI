@@ -81,10 +81,14 @@ La API estará disponible en `http://localhost:8000`
 
 ```powershell
 # Streaming sin buffer
-curl.exe -N -i -X POST http://localhost:8000/api/chat `
-  -H "Content-Type: application/json" `
-  -H "Accept: text/event-stream" `
-  -d '{"message":"ventas por mes en 2017","session_id":"test-1"}'
+curl -i -N -X POST http://0.0.0.0:8000/api/chat \
+     -H "Content-Type: application/json" \
+     -H "Accept: text/event-stream" \
+     -d '{
+           "message": "Cuáles fueron las ventas totales por mes en 2017?",
+           "session_id": "121",
+           "role": "analyst"
+         }'
 ```
 
 ### Con Bruno/Postman/Insomnia
