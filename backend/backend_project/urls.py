@@ -16,12 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from main_app.views import home, chat_ai,generate_analytic_questions
-
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', home),
-    path('chat/', chat_ai),
-    path("api/analytics/generarPreguntasIA/", generate_analytic_questions, name="generar_preguntas_ia"),
 ]
