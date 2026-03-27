@@ -1,4 +1,4 @@
-"""Tools package for handytec - MCP Lakehouses.
+"""Tools package for MCP minimal.
 
 This package contains modular tool implementations organized by functional area.
 """

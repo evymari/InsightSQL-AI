@@ -1,4 +1,4 @@
-"""Services package for handytec - MCP Lakehouses.
+"""Services package for MCP Lakehouses.
 
 This package contains all service layer implementations including
 connection managers, data sources, and business logic services.

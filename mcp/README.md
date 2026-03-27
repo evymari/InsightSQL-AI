@@ -4,25 +4,25 @@
 
 ```powershell
 uv pip install --python venv/Scripts/python.exe -r pyproject.toml
-./venv/Scripts/python.exe -m uvicorn src.server:app --host 0.0.0.0 --port 8000
+./venv/Scripts/python.exe -m uvicorn src.server:app --host 0.0.0.0 --port 5000
 ```
 
 ### Run server
 
 ```powershell
-uvicorn src.server:app
+uvicorn src.server:app --host 0.0.0.0 --port 5000
 ```
 
 Server endpoints:
-- MCP JSON-RPC (streamable HTTP): `http://localhost:8000/mcp`
-- Health: `http://localhost:8000/health`
+- MCP JSON-RPC (streamable HTTP): `http://localhost:5000/mcp`
+- Health: `http://localhost:5000/health`
 
 ### Standalone smoke test (without backend)
 
 Start MCP first and then run:
 
 ```powershell
-python scripts/smoke_test_mcp.py --base-url http://localhost:8000 --postgres-schema public
+python scripts/smoke_test_mcp.py --base-url http://localhost:5000 --postgres-schema public
 ```
 
 This smoke test validates:

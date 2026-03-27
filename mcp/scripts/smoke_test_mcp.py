@@ -51,7 +51,7 @@ async def call_tool(client: httpx.AsyncClient, mcp_endpoint: str, name: str, arg
 
 async def main() -> int:
     parser = argparse.ArgumentParser(description="MCP standalone smoke test")
-    parser.add_argument("--base-url", default="http://localhost:8000", help="MCP base URL")
+    parser.add_argument("--base-url", default="http://localhost:5000", help="MCP base URL")
     parser.add_argument("--timeout", type=int, default=30, help="Request timeout in seconds")
     parser.add_argument("--postgres-schema", default="public", help="PostgreSQL schema for list tables")
     parser.add_argument("--fabric-query", default="SELECT TOP 1 name FROM sys.tables", help="Read-only query for Fabric")

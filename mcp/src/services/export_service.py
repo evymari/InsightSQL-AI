@@ -31,7 +31,7 @@ class BlobExportService:
     
     def __init__(self, storage_account: str = None, container_name: str = None):
         """Initialize the blob export service."""
-        self.storage_account = storage_account or os.getenv("BLOB_STORAGE_ACCOUNT", "dlshandytecdemo")
+        self.storage_account = storage_account or os.getenv("BLOB_STORAGE_ACCOUNT", "dlsdemo")
         self.container_name = container_name or os.getenv("BLOB_CONTAINER_NAME", "data-agent")
         self.account_url = f"https://{self.storage_account}.blob.core.windows.net"
         

@@ -3,11 +3,11 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "handytec-mcp-lakehouses"
+name = "mcp-minimal"
 version = "1.0.0"
-description = "handytec One - MCP Server to run SQL queries and explore schemas in MS Fabric and PostgreSQL"
+description = "MCP Server to run SQL queries and explore schemas in MS Fabric and PostgreSQL"
 license-files = ["LICENSE"]
-keywords = ["handytec", "mcp", "llm", "fabric", "postgres", "warehouse", "lakehouse"]
+keywords = ["mcp", "llm", "fabric", "postgres", "warehouse", "lakehouse"]
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 dependencies = [
@@ -119,10 +119,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://handytec@dev.azure.com/handytec/handytec-ai/_git/handytec-data-agent"
 
 [project.scripts]
-handytec-one-mcp = "main:cli_start"
 
 [tool.setuptools]
 packages = ["src", "src.services", "src.tools"]

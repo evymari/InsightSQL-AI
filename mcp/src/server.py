@@ -1,4 +1,4 @@
-"""handytecOne MCP Server - Modularized Version.
+"""MCP Server - Modularized Version.
 
 This is the main server file that initializes the FastMCP application
 and registers all tool modules.
@@ -25,7 +25,7 @@ logging.basicConfig(
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
     handlers=[logging.StreamHandler(sys.stderr)],
 )
-logger = logging.getLogger("handytec-mcp-lakehouses")
+logger = logging.getLogger("mcp-minimal")
 
 from fastmcp import FastMCP
 from starlette.requests import Request
@@ -47,7 +47,7 @@ from src.tools import (
 )
 
 # Initialize FastMCP application
-mcp_server = FastMCP("handytec - MCP Lakehouses")
+mcp_server = FastMCP("MCP Lakehouses")
 
 # Initialize the connection manager
 connection_manager = ConnectionManager()
@@ -73,7 +73,7 @@ logger.info("All tools registered successfully.")
 
 @mcp_server.custom_route("/health", methods=["GET"])
 async def health(request: Request) -> JSONResponse:
-    return JSONResponse({"status": "ok", "service": "handytec-mcp-lakehouses"})
+    return JSONResponse({"status": "ok", "service": "mcp-minimal"})
 
 
 # ASGI app for uvicorn using streamable HTTP transport.
@@ -103,7 +103,7 @@ if __name__ == "__main__":
     if transport == "http":
         import uvicorn
         host = os.environ.get("MCP_HOST", "0.0.0.0")
-        port = int(os.environ.get("MCP_PORT", "8000"))
+        port = int(os.environ.get("MCP_PORT", "5000"))
         logger.info("HTTP server listening on %s:%d", host, port)
         logger.info("MCP endpoint available at: http://%s:%d/mcp", host, port)
         uvicorn.run(app, host=host, port=port)
