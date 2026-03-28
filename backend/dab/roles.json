@@ -1,0 +1,36 @@
+{
+  "roles": {
+    "viewer": {
+      "description": "Acceso limitado solo a Orders y Products",
+      "permissions": {
+        "Orders": ["read"],
+        "Products": ["read"]
+      }
+    },
+    "analyst": {
+      "description": "Acceso completo de lectura a todas las tablas Olist",
+      "permissions": {
+        "Orders": ["read"],
+        "Products": ["read"],
+        "Customers": ["read"],
+        "OrderItems": ["read"],
+        "OrderPayments": ["read"],
+        "OrderReviews": ["read"],
+        "Sellers": ["read"]
+      }
+    },
+    "admin": {
+      "description": "Acceso completo CRUD a todas las tablas",
+      "permissions": {
+        "Orders": ["read", "create", "update", "delete"],
+        "Products": ["read", "create", "update", "delete"],
+        "Customers": ["read"],
+        "OrderItems": ["read"],
+        "OrderPayments": ["read"],
+        "OrderReviews": ["read"],
+        "Sellers": ["read"]
+      }
+    }
+  },
+  "default_role": "viewer"
+}

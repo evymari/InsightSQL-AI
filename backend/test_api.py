@@ -35,42 +35,61 @@ async def test_pipeline():
     for i, test in enumerate(test_cases, 1):
         print(f"\n--- Test {i}: {test['message']} ---")
         try:
-            result = await run_pipeline(test["message"], test["session_id"])
+            final_data = None
+            async for event in run_pipeline(test["message"], test["session_id"]):
+                event_type = event.get("type")
+                stage = event.get("stage", "")
+                if event_type == "stage":
+                    print(f"⏳ {stage}: {event.get('message', '')}")
+                elif event_type == "warning":
+                    print(f"⚠️ {stage}: {event.get('message', '')}")
+                elif event_type == "error":
+                    print(f"❌ {stage}: {event.get('message', '')}")
+                elif event_type == "final":
+                    final_data = event.get("data")
+
+            if not final_data:
+                print("❌ El pipeline no emitió evento final")
+                continue
+
+            intencion = final_data.get("intencion", {})
+            sql = final_data.get("sql", {})
+            insight = final_data.get("insight", {})
             
             # Validate intention decomposition
-            if result.intencion.metrica:
-                print(f"✅ Métrica detectada: {result.intencion.metrica}")
+            if intencion.get("metrica"):
+                print(f"✅ Métrica detectada: {intencion.get('metrica')}")
             else:
                 print("❌ No se detectó métrica")
                 
-            if result.intencion.dimension:
-                print(f"✅ Dimensión detectada: {result.intencion.dimension}")
+            if intencion.get("dimension"):
+                print(f"✅ Dimensión detectada: {intencion.get('dimension')}")
             else:
                 print("ℹ️ No se detectó dimensión")
                 
-            if result.intencion.filtro:
-                print(f"✅ Filtro detectado: {result.intencion.filtro}")
+            if intencion.get("filtro"):
+                print(f"✅ Filtro detectado: {intencion.get('filtro')}")
             else:
                 print("ℹ️ No se detectó filtro")
                 
-            if result.intencion.granularidad:
-                print(f"✅ Granularidad detectada: {result.intencion.granularidad}")
+            if intencion.get("granularidad"):
+                print(f"✅ Granularidad detectada: {intencion.get('granularidad')}")
             else:
                 print("ℹ️ No se detectó granularidad")
             
             # Validate SQL generation
-            if result.sql.query:
-                print(f"✅ SQL generado: {result.sql.query[:100]}...")
-                print(f"   Tiene LIMIT: {result.sql.tiene_limit}")
+            if sql.get("query"):
+                print(f"✅ SQL generado: {sql.get('query')[:100]}...")
+                print(f"   Tiene LIMIT: {sql.get('tiene_limit')}")
             else:
                 print("❌ No se generó SQL")
             
             # Validate insights
-            if result.insight.resumen_ejecutivo:
-                print(f"✅ Resumen: {result.insight.resumen_ejecutivo[:80]}...")
+            if insight.get("resumen_ejecutivo"):
+                print(f"✅ Resumen: {insight.get('resumen_ejecutivo')[:80]}...")
             
-            if result.advertencias:
-                print(f"⚠️ Advertencias: {result.advertencias}")
+            if final_data.get("advertencias"):
+                print(f"⚠️ Advertencias: {final_data.get('advertencias')}")
                 
         except Exception as e:
             print(f"❌ Error: {str(e)}")

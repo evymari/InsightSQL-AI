@@ -1,9 +1,14 @@
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+
 from typing import Optional
 from openai import AsyncOpenAI
 from anthropic import AsyncAnthropic
 from ..core.config import settings
-
+env_path = Path(__file__).parent.parent.parent / ".env"
+print("env_path llm.py", env_path)
+load_dotenv(env_path)
 
 class LLMProvider:
     def __init__(self):
@@ -19,9 +24,13 @@ class LLMProvider:
             self.model = settings.openai_model
 
         elif self.provider == "azure_openai":
-            if not settings.openai_azure_api_key or not settings.openai_azure_endpoint:
+            if not settings.openai_azure_api_key:
                 raise ValueError(
-                    "OPENAI_AZURE_API_KEY and OPENAI_AZURE_ENDPOINT are required for Azure OpenAI"
+                    "OPENAI_AZURE_API_KEY are required for Azure OpenAI"
+                )
+            if not settings.openai_azure_endpoint:
+                raise ValueError(
+                    "OPENAI_AZURE_ENDPOINT are required for Azure OpenAI"
                 )
             # Para Azure OpenAI, necesitamos extraer el endpoint base
             base_url = (

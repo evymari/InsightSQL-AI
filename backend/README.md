@@ -117,30 +117,50 @@ Cache-Control: no-cache
 - `"promedio de calificación por estado"`
 - `"top 5 vendedores por monto de ventas"`
 
-## 📋 Respuesta Esperada
+## 📋 Respuesta Esperada (SSE)
+
+El endpoint emite **múltiples eventos SSE** durante el procesamiento (`stage`, `warning`, `error`) y un evento final con el resultado consolidado.
+
+Ejemplo de evento intermedio:
 
 ```json
 {
+  "type": "stage",
+  "stage": "sql_started",
   "session_id": "test-1",
-  "intencion": {
-    "metrica": "ventas_totales",
-    "dimension": "mes", 
-    "filtro": "año 2017",
-    "granularidad": "mensual",
-    "ambigua": false
-  },
-  "sql": {
-    "query": "SELECT EXTRACT(MONTH FROM o.order_purchase_timestamp) AS mes, SUM(oi.price + oi.freight_value) AS ventas_totales FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE EXTRACT(YEAR FROM o.order_purchase_timestamp) = 2017 GROUP BY EXTRACT(MONTH FROM o.order_purchase_timestamp) ORDER BY mes LIMIT 1000",
-    "tiene_limit": true,
-    "usa_cte": false
-  },
-  "requiere_aprobacion": false,
-  "advertencias": [],
-  "resultado": [...],
-  "insight": {
-    "resumen_ejecutivo": "Las ventas mensuales en 2017 muestran...",
-    "dato_clave": "El mes de mayor actividad fue...",
-    "siguiente_pregunta": "¿Quieres ver el desglose por categoría?"
+  "message": "Iniciando ejecución SQL"
+}
+```
+
+Ejemplo de evento final:
+
+```json
+{
+  "type": "final",
+  "stage": "completed",
+  "session_id": "test-1",
+  "data": {
+    "session_id": "test-1",
+    "intencion": {
+      "metrica": "ventas_totales",
+      "dimension": "mes", 
+      "filtro": "año 2017",
+      "granularidad": "mensual",
+      "ambigua": false
+    },
+    "sql": {
+      "query": "SELECT EXTRACT(MONTH FROM o.order_purchase_timestamp) AS mes, SUM(oi.price + oi.freight_value) AS ventas_totales FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE EXTRACT(YEAR FROM o.order_purchase_timestamp) = 2017 GROUP BY EXTRACT(MONTH FROM o.order_purchase_timestamp) ORDER BY mes LIMIT 1000",
+      "tiene_limit": true,
+      "usa_cte": false
+    },
+    "requiere_aprobacion": false,
+    "advertencias": [],
+    "resultado": [...],
+    "insight": {
+      "resumen_ejecutivo": "Las ventas mensuales en 2017 muestran...",
+      "dato_clave": "El mes de mayor actividad fue...",
+      "siguiente_pregunta": "¿Quieres ver el desglose por categoría?"
+    }
   }
 }
 ```
@@ -188,7 +208,7 @@ curl.exe -N -i -X POST http://localhost:8000/api/chat `
 
 ## 📝 Notas Técnicas
 
-- **Streaming SSE**: Usa `StreamingResponse` de FastAPI para respuestas en tiempo real
+- **Streaming SSE real**: El pipeline emite eventos intermedios con `yield` y no espera al resultado final para comenzar a responder
 - **Reintento JSON**: Si el LLM no devuelve JSON válido, reintenta con contexto del error
 - **Seguridad SQL**: Todas las consultas incluyen LIMIT 1000
 - **Azure OpenAI**: Configurado específicamente para Azure con deployment names
